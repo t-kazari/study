@@ -13,10 +13,10 @@ from employee_management.utils.contextutils import get_logger
 
 logger = get_logger()
 
-router = APIRouter(prefix="/api/employees", tags=["employees"])
+router = APIRouter(tags=["employees"])
 
 
-@router.get("", response_model=List[EmployeeResponse], summary="社員一覧取得")
+@router.get("/api/employees", response_model=List[EmployeeResponse], summary="社員一覧取得")
 def get_employees(
     keyword: Optional[str] = Query(None, description="キーワード検索（氏名、社員番号、メール）"),
     department: Optional[str] = Query(None, description="所属部署絞り込み"),
@@ -29,7 +29,7 @@ def get_employees(
     pass
 
 
-@router.get("/{employee_id}", response_model=EmployeeResponse, summary="社員詳細取得")
+@router.get("/api/employees/{employee_id}", response_model=EmployeeResponse, summary="社員詳細取得")
 def get_employee(
     employee_id: int,
     db: Session = Depends(get_db),
@@ -41,7 +41,7 @@ def get_employee(
 
 
 @router.post(
-    "",
+    "/api/employees",
     response_model=EmployeeResponse,
     status_code=status.HTTP_201_CREATED,
     summary="社員新規登録",
@@ -57,7 +57,7 @@ def create_employee(
     pass
 
 
-@router.put("/{employee_id}", response_model=EmployeeResponse, summary="社員情報更新")
+@router.put("/api/employees/{employee_id}", response_model=EmployeeResponse, summary="社員情報更新")
 def update_employee(
     employee_id: int,
     employee_data: EmployeeUpdate,
@@ -71,7 +71,7 @@ def update_employee(
 
 
 @router.delete(
-    "/{employee_id}",
+    "/api/employees/{employee_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="社員削除",
 )
