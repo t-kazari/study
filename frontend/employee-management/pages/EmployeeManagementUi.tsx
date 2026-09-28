@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import {
   Alert,
   Box,
@@ -13,26 +14,25 @@ import {
   EmployeeSearchParams,
   EmployeeUpdateInput,
 } from '../types/employee';
-import {
-  createEmployee,
-  deleteEmployee,
-  fetchEmployees,
-  updateEmployee,
-} from '../services/employeeApi';
 import { EmployeeSearchForm } from './components/EmployeeSearchForm';
 import { EmployeeTable } from './components/EmployeeTable';
 import { EmployeeCreateModal } from './components/EmployeeCreateModal';
 import { EmployeeDeleteConfirmDialog } from './components/EmployeeDeleteConfirmDialog';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+
 export const EmployeeManagementUi: React.FC = () => {
+  // 社員一覧データ
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [searchParams, setSearchParams] = useState<EmployeeSearchParams>({});
 
+  // モーダル・ダイアログの開閉状態
   const [createModalOpen, setCreateModalOpen] = useState<boolean>(false);
   const [deleteTargetEmployee, setDeleteTargetEmployee] = useState<Employee | null>(null);
   const [deleteLoading, setDeleteLoading] = useState<boolean>(false);
 
+  // 通知スナックバー
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
@@ -43,12 +43,14 @@ export const EmployeeManagementUi: React.FC = () => {
     severity: 'info',
   });
 
-  // TODO: [課題1] 社員一覧データを取得する関数を実装してください
+  // 社員一覧データの取得 (axios 直接呼び出し)
   const loadEmployees = async (params: EmployeeSearchParams = searchParams) => {
     try {
       setLoading(true);
-      const data = await fetchEmployees(params);
-      setEmployees(data);
+      const response = await axios.get<Employee[]>(`${API_BASE_URL}/api/employees`, {
+        params,
+      });
+      setEmployees(response.data);
     } catch (err: any) {
       console.error('社員データ取得エラー:', err);
       showSnackbar('社員データの取得に失敗しました', 'error');
@@ -70,16 +72,16 @@ export const EmployeeManagementUi: React.FC = () => {
     setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
-  // TODO: [課題1] 検索ハンドラーを実装してください
+  // 検索ハンドラー
   const handleSearch = (params: EmployeeSearchParams) => {
     setSearchParams(params);
     loadEmployees(params);
   };
 
-  // TODO: [課題2] 新規社員登録ハンドラーを実装してください
+  // 新規社員登録ハンドラー (axios 直接呼び出し)
   const handleCreate = async (data: EmployeeCreateInput) => {
     try {
-      await createEmployee(data);
+      await axios.post(`${API_BASE_URL}/api/employees`, data);
       showSnackbar(`社員「${data.name}」を登録しました`, 'success');
       await loadEmployees();
     } catch (err: any) {
@@ -91,10 +93,10 @@ export const EmployeeManagementUi: React.FC = () => {
     }
   };
 
-  // TODO: [課題3] 行内編集・更新ハンドラーを実装してください
+  // 行内編集・更新ハンドラー (axios 直接呼び出し)
   const handleUpdate = async (id: number, data: EmployeeUpdateInput) => {
     try {
-      await updateEmployee(id, data);
+      await axios.put(`${API_BASE_URL}/api/employees/${id}`, data);
       showSnackbar('社員情報を更新しました', 'success');
       await loadEmployees();
     } catch (err: any) {
@@ -106,17 +108,18 @@ export const EmployeeManagementUi: React.FC = () => {
     }
   };
 
+  // 削除ダイアログ開く
   const handleOpenDeleteDialog = (employee: Employee) => {
     setDeleteTargetEmployee(employee);
   };
 
-  // TODO: [課題4] 削除実行ハンドラーを実装してください
+  // 削除実行ハンドラー (axios 直接呼び出し)
   const handleConfirmDelete = async () => {
     if (!deleteTargetEmployee) return;
 
     try {
       setDeleteLoading(true);
-      await deleteEmployee(deleteTargetEmployee.id);
+      await axios.delete(`${API_BASE_URL}/api/employees/${deleteTargetEmployee.id}`);
       showSnackbar(`社員「${deleteTargetEmployee.name}」を削除しました`, 'success');
       setDeleteTargetEmployee(null);
       await loadEmployees();

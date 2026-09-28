@@ -57,12 +57,12 @@
    - `@router.put("/{employee_id}")` ハンドラーを実装。
 
 ### フロントエンド
-1. **`services/employeeApi.ts`**:
-   - `updateEmployee(id: number, data: EmployeeUpdateInput)` を実装（`axios.put`）。
-2. **`pages/components/EmployeeTable.tsx`**:
+1. **`pages/components/EmployeeTable.tsx`**:
    - `checkedIds`（チェックされた社員ID配列）ステートと、`editRows`（編集内容の辞書）ステートを管理。
    - `isChecked ? <TextField ... /> : emp.name` のように三項演算子で表示を切り替える。
    - 「保存」ボタンの `disabled={!isChecked}` 制御を実装。
+2. **`pages/EmployeeManagementUi.tsx`**:
+   - `handleUpdate` 関数で `axios.put('/api/employees/' + id, data)` を呼び出し、一覧を更新。
 
 ---
 

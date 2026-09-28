@@ -62,13 +62,11 @@
    - `@router.post("", status_code=201)` を実装。
 
 ### フロントエンド
-1. **`services/employeeApi.ts`**:
-   - `createEmployee(data: EmployeeCreateInput)` を実装（`axios.post`）。
-2. **`pages/components/EmployeeCreateModal.tsx`**:
+1. **`pages/components/EmployeeCreateModal.tsx`**:
    - `yup.object()` でバリデーションスキーマを定義。
    - `useForm` に `yupResolver` を渡し、MUIの各入力欄を `Controller` でバインド。
-3. **`pages/EmployeeManagementUi.tsx`**:
-   - `handleCreate` 関数で `createEmployee` を呼び出し、一覧を更新。
+2. **`pages/EmployeeManagementUi.tsx`**:
+   - `handleCreate` 関数で `axios.post('/api/employees', data)` を呼び出し、一覧を更新。
 
 ---
 
