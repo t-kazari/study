@@ -1,83 +1,112 @@
 from datetime import datetime
 from typing import List, Optional
-from sqlalchemy import Column, Date, DateTime, Integer, String, or_, select
-from sqlalchemy.orm import Session
-from employee_management.config import Base
+import sqlalchemy
+from injector import inject
+from employee_management.config import metadata
 from employee_management.domain.employee import EmployeeCreate, EmployeeUpdate
 from employee_management.repository.employee_repository import EmployeeRepository
+from employee_management.utils.contextutils import Context
 
-
-class EmployeeModel(Base):
-    """SQLAlchemy 社員テーブルORMモデル"""
-    __tablename__ = "employees"
-
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    employee_code = Column(String(20), unique=True, nullable=False, index=True)
-    name = Column(String(100), nullable=False)
-    email = Column(String(150), unique=True, nullable=False, index=True)
-    department = Column(String(50), nullable=False)
-    position = Column(String(50), nullable=False)
-    joined_date = Column(Date, nullable=False)
-    status = Column(String(20), nullable=False, default="在籍")
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
-    updated_at = Column(
-        DateTime,
-        nullable=False,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
-    )
+# SQLAlchemy Core Table 定義
+employees_table = sqlalchemy.Table(
+    "employees",
+    metadata,
+    sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True, autoincrement=True),
+    sqlalchemy.Column("employee_code", sqlalchemy.String(20), unique=True, nullable=False),
+    sqlalchemy.Column("name", sqlalchemy.String(100), nullable=False),
+    sqlalchemy.Column("email", sqlalchemy.String(150), unique=True, nullable=False),
+    sqlalchemy.Column("department", sqlalchemy.String(50), nullable=False),
+    sqlalchemy.Column("position", sqlalchemy.String(50), nullable=False),
+    sqlalchemy.Column("joined_date", sqlalchemy.Date, nullable=False),
+    sqlalchemy.Column("status", sqlalchemy.String(20), nullable=False, default="在籍"),
+    sqlalchemy.Column("created_at", sqlalchemy.DateTime, nullable=False, default=datetime.utcnow),
+    sqlalchemy.Column("updated_at", sqlalchemy.DateTime, nullable=False, default=datetime.utcnow),
+)
 
 
 class EmployeeRepositoryImpl(EmployeeRepository):
-    """EmployeeRepository の MySQL/SQLAlchemy による具象実装クラス"""
+    """EmployeeRepository の SQLAlchemy Core + Context(databases) による非同期具象実装"""
 
-    def get_all(
+    @inject
+    def __init__(self, ctx: Context):
+        self.__ctx = ctx
+
+    async def get_all(
         self,
-        db: Session,
         keyword: Optional[str] = None,
         department: Optional[str] = None,
-    ) -> List[EmployeeModel]:
-        # TODO: [課題1] 社員一覧取得処理を実装してください
-        # 1. select(EmployeeModel) でクエリを作成します。
-        # 2. department が指定されている場合は where(EmployeeModel.department == department) で絞り込みます。
-        # 3. keyword が指定されている場合は or_() を使い、name, employee_code, email の部分一致（.like()）で絞り込みます。
-        # 4. id 昇順（.order_by(EmployeeModel.id.asc())）で並び替え、list(db.scalars(query).all()) を返してください。
-        pass
+    ) -> List[dict]:
+        """社員一覧を取得する（キーワード検索・部署絞り込み対応）"""
+        query = employees_table.select()
 
-    def get_by_id(self, db: Session, employee_id: int) -> Optional[EmployeeModel]:
-        return db.get(EmployeeModel, employee_id)
+        # 部署での絞り込み
+        if department:
+            query = query.where(employees_table.c.department == department)
 
-    def get_by_code(self, db: Session, employee_code: str) -> Optional[EmployeeModel]:
-        # TODO: [課題2] 社員番号での重複チェック用取得クエリを実装してください
-        # select(EmployeeModel).where(EmployeeModel.employee_code == employee_code)
-        pass
+        # キーワード検索（氏名、社員番号、メールアドレスの部分一致）
+        if keyword:
+            pattern = f"%{keyword}%"
+            query = query.where(
+                sqlalchemy.or_(
+                    employees_table.c.name.like(pattern),
+                    employees_table.c.employee_code.like(pattern),
+                    employees_table.c.email.like(pattern),
+                )
+            )
 
-    def get_by_email(self, db: Session, email: str) -> Optional[EmployeeModel]:
-        # TODO: [課題2] メールアドレスでの重複チェック用取得クエリを実装してください
-        # select(EmployeeModel).where(EmployeeModel.email == email)
-        pass
+        query = query.order_by(employees_table.c.id.asc())
+        result = await self.__ctx.db.fetch_all(query)
+        return [dict(r) for r in result]
 
-    def create(self, db: Session, employee: EmployeeCreate) -> EmployeeModel:
-        # TODO: [課題2] 社員新規登録処理を実装してください
-        # 1. EmployeeModel インスタンスを作成します。
-        # 2. db.add(db_employee) でセッションに追加します。
-        # 3. db.commit() でコミットし、db.refresh(db_employee) で確定データを読み込んで返してください。
-        pass
+    async def get_by_id(self, employee_id: int) -> Optional[dict]:
+        """IDで社員を1件取得する"""
+        query = employees_table.select().where(employees_table.c.id == employee_id)
+        result = await self.__ctx.db.fetch_one(query)
+        return dict(result) if result else None
 
-    def update(
+    async def get_by_code(self, employee_code: str) -> Optional[dict]:
+        """社員番号で社員を1件取得する"""
+        query = employees_table.select().where(employees_table.c.employee_code == employee_code)
+        result = await self.__ctx.db.fetch_one(query)
+        return dict(result) if result else None
+
+    async def get_by_email(self, email: str) -> Optional[dict]:
+        """メールアドレスで社員を1件取得する"""
+        query = employees_table.select().where(employees_table.c.email == email)
+        result = await self.__ctx.db.fetch_one(query)
+        return dict(result) if result else None
+
+    async def create(self, employee: EmployeeCreate) -> dict:
+        """社員を新規登録する"""
+        values = employee.model_dump()
+        values["created_at"] = datetime.utcnow()
+        values["updated_at"] = datetime.utcnow()
+        query = employees_table.insert().values(**values)
+        record_id = await self.__ctx.db.execute(query)
+        created = await self.get_by_id(record_id)
+        return created
+
+    async def update(
         self,
-        db: Session,
         employee_id: int,
         employee: EmployeeUpdate,
-    ) -> Optional[EmployeeModel]:
-        # TODO: [課題3] 社員情報更新処理を実装してください
-        # 1. self.get_by_id(db, employee_id) で対象レコードを取得します。存在しなければ None を返します。
-        # 2. employee.model_dump(exclude_unset=True) で渡された項目のみ setattr で更新します。
-        # 3. db.commit() と db.refresh(db_employee) を実行して返してください。
-        pass
+    ) -> Optional[dict]:
+        """社員情報を更新する"""
+        update_data = employee.model_dump(exclude_unset=True)
+        if not update_data:
+            return await self.get_by_id(employee_id)
 
-    def delete(self, db: Session, employee_id: int) -> bool:
-        # TODO: [課題4] 社員の物理削除処理を実装してください
-        # 1. self.get_by_id(db, employee_id) で対象レコードを取得します。存在しなければ False を返します。
-        # 2. db.delete(db_employee) を実行し、db.commit() を行って True を返してください。
-        pass
+        update_data["updated_at"] = datetime.utcnow()
+        query = (
+            employees_table.update()
+            .where(employees_table.c.id == employee_id)
+            .values(**update_data)
+        )
+        await self.__ctx.db.execute(query)
+        return await self.get_by_id(employee_id)
+
+    async def delete(self, employee_id: int) -> bool:
+        """社員を物理削除する"""
+        query = employees_table.delete().where(employees_table.c.id == employee_id)
+        affected = await self.__ctx.db.execute(query)
+        return bool(affected)

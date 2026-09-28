@@ -93,9 +93,9 @@
 />
 ```
 
-### バックエンド: 重複チェックの例外送出
+### バックエンド: 重複チェックの例外送出 (非同期)
 ```python
-if self.repository.get_by_code(db, employee_data.employee_code):
+if await self.repository.get_by_code(employee_data.employee_code):
     raise HTTPException(
         status_code=status.HTTP_400_BAD_REQUEST,
         detail=f"社員番号 '{employee_data.employee_code}' は既に登録されています",

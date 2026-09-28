@@ -64,18 +64,17 @@ export const deleteEmployee = async (id: number): Promise<void> => {
 };
 ```
 
-### バックエンド: 204 No Content のハンドラー定義
+### バックエンド: 204 No Content の非同期ハンドラー定義
 ```python
 @router.delete(
     "/{employee_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="社員削除",
 )
-def delete_employee(
+async def delete_employee(
     employee_id: int,
-    db: Session = Depends(get_db),
     service: EmployeeService = Depends(get_employee_service),
 ):
-    service.delete_employee(db, employee_id)
+    await service.delete_employee(employee_id)
     return None
 ```
