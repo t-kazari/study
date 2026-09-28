@@ -1,9 +1,7 @@
 from typing import List, Optional
 from fastapi import HTTPException, status
 from injector import inject
-from sqlalchemy.orm import Session
 from employee_management.domain.employee import EmployeeCreate, EmployeeUpdate
-from employee_management.infra.employee_impl import EmployeeModel
 from employee_management.repository.employee_repository import EmployeeRepository
 
 
@@ -15,19 +13,18 @@ class EmployeeService:
         # 抽象インターフェース EmployeeRepository をインジェクション
         self.repository = repository
 
-    def get_employees(
+    async def get_employees(
         self,
-        db: Session,
         keyword: Optional[str] = None,
         department: Optional[str] = None,
-    ) -> List[EmployeeModel]:
-        # TODO: [課題1] リポジトリの一覧取得メソッドを呼び出してください
-        # return self.repository.get_all(db, keyword=keyword, department=department)
+    ) -> List[dict]:
+        # TODO: [課題1] リポジトリの一覧取得メソッドを非同期呼び出ししてください
+        # return await self.repository.get_all(keyword=keyword, department=department)
         pass
 
-    def get_employee_by_id(self, db: Session, employee_id: int) -> EmployeeModel:
+    async def get_employee_by_id(self, employee_id: int) -> dict:
         """指定IDの社員を取得する"""
-        employee = self.repository.get_by_id(db, employee_id)
+        employee = await self.repository.get_by_id(employee_id)
         if not employee:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -35,27 +32,26 @@ class EmployeeService:
             )
         return employee
 
-    def create_employee(self, db: Session, employee_data: EmployeeCreate) -> EmployeeModel:
+    async def create_employee(self, employee_data: EmployeeCreate) -> dict:
         # TODO: [課題2] 社員新規登録の業務ルール（重複チェック）を実装してください
-        # 1. self.repository.get_by_code() で社員番号の重複をチェック（重複時は HTTPException 400）
-        # 2. self.repository.get_by_email() でメールアドレスの重複をチェック（重複時は HTTPException 400）
-        # 3. self.repository.create() を呼び出して作成結果を返してください
+        # 1. await self.repository.get_by_code() で社員番号の重複をチェック（重複時は HTTPException 400）
+        # 2. await self.repository.get_by_email() でメールアドレスの重複をチェック（重複時は HTTPException 400）
+        # 3. await self.repository.create() を呼び出して作成結果を返してください
         pass
 
-    def update_employee(
+    async def update_employee(
         self,
-        db: Session,
         employee_id: int,
         employee_data: EmployeeUpdate,
-    ) -> EmployeeModel:
+    ) -> dict:
         # TODO: [課題3] 社員情報更新の業務ルールを実装してください
-        # 1. 存在チェック（self.repository.get_by_id で見つからなければ 404）
+        # 1. 存在チェック（await self.repository.get_by_id で見つからなければ 404）
         # 2. メールアドレス変更時の重複チェック（他人が既に使用していないかチェック）
-        # 3. self.repository.update() を呼び出して更新結果を返してください
+        # 3. await self.repository.update() を呼び出して更新結果を返してください
         pass
 
-    def delete_employee(self, db: Session, employee_id: int) -> None:
+    async def delete_employee(self, employee_id: int) -> None:
         # TODO: [課題4] 社員削除の業務ルールを実装してください
         # 1. 存在チェック（見つからなければ 404）
-        # 2. self.repository.delete() を呼び出して削除してください
+        # 2. await self.repository.delete() を呼び出して削除してください
         pass

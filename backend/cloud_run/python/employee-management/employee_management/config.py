@@ -1,36 +1,36 @@
+import json
 import os
-from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
+import databases
+import sqlalchemy
+from employee_management.domain import constants
 
-# 環境変数からDB接続設定を取得（デフォルトはローカルDocker Compose設定）
-DB_USER = os.getenv("DB_USER", "user")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "password")
-DB_HOST = os.getenv("DB_HOST", "mysql")
-DB_PORT = os.getenv("DB_PORT", "3306")
-DB_NAME = os.getenv("DB_NAME", "employee_db")
+DATABASE = "mysql"
 
-# MySQL接続URLの構築 (PyMySQLを使用)
-DATABASE_URL = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?charset=utf8mb4"
+# SecretManagerから取得・マウントされたJSONファイルから認証情報を読み込む
+if os.path.exists(constants.DB_SECRET_PATH):
+    f = open(constants.DB_SECRET_PATH, 'r', encoding='utf-8')
+    jsondata = json.load(f)
+    f.close()
 
-# SQLAlchemy エンジンの作成
-engine = create_engine(
-    DATABASE_URL,
-    pool_pre_ping=True,
-    pool_recycle=3600,
-    echo=False,
-)
+    USER = jsondata['DB_USER']
+    PASSWORD = jsondata['DB_PASS']
+    DB_NAME = jsondata['DB_NAME']
+    HOST = jsondata['CONNECTION_DIST']
+else:
+    # ファイルが見つからない場合の環境変数フォールバック
+    USER = os.getenv("DB_USER", "user")
+    PASSWORD = os.getenv("DB_PASSWORD", "password")
+    DB_NAME = os.getenv("DB_NAME", "employee_db")
+    HOST = os.getenv("DB_HOST", "mysql:3306")
 
-# セッションファクトリの定義
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# databases ライブラリ用非同期接続URL (aiomysql)
+DATABASE_URL = f"mysql+aiomysql://{USER}:{PASSWORD}@{HOST}/{DB_NAME}?charset=utf8mb4"
 
-# ORMモデルの基底クラス
-Base = declarative_base()
+# databases.Database インスタンス（非同期DB接続プール）
+database = databases.Database(DATABASE_URL, min_size=5, max_size=20)
 
-
-def get_db():
-    """DBセッションのコンテキスト管理用ジェネレータ関数"""
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+ECHO_LOG = False
+# SQLAlchemy Core Engine (同期マイグレーション・テーブル作成用)
+ENGINE_URL = f"mysql+pymysql://{USER}:{PASSWORD}@{HOST}/{DB_NAME}?charset=utf8mb4"
+engine = sqlalchemy.create_engine(ENGINE_URL, echo=ECHO_LOG)
+metadata = sqlalchemy.MetaData()

@@ -40,6 +40,7 @@ services:
       - "8000:8000"
     volumes:
       - ./backend/cloud_run/python/employee-management:/app
+      - ./backend/cloud_run/python/employee-management/secrets/cloud_sql.json:/etc/secrets/cloud_sql.json:ro
     depends_on:
       mysql:
         condition: service_healthy

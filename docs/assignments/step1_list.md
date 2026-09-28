@@ -70,24 +70,26 @@
 
 ## 💡 実装のヒント & 参考コード
 
-### バックエンドのヒント (SQLAlchemy 2.0の検索クエリ)
+### バックエンドのヒント (SQLAlchemy Core + Context 非同期クエリ)
 ```python
-from sqlalchemy import or_, select
+import sqlalchemy
 
-query = select(EmployeeModel)
-if department:
-    query = query.where(EmployeeModel.department == department)
-if keyword:
-    pattern = f"%{keyword}%"
-    query = query.where(
-        or_(
-            EmployeeModel.name.like(pattern),
-            EmployeeModel.employee_code.like(pattern),
-            EmployeeModel.email.like(pattern),
+async def get_all(self, keyword=None, department=None):
+    query = employees_table.select()
+    if department:
+        query = query.where(employees_table.c.department == department)
+    if keyword:
+        pattern = f"%{keyword}%"
+        query = query.where(
+            sqlalchemy.or_(
+                employees_table.c.name.like(pattern),
+                employees_table.c.employee_code.like(pattern),
+                employees_table.c.email.like(pattern),
+            )
         )
-    )
-query = query.order_by(EmployeeModel.id.asc())
-return list(db.scalars(query).all())
+    query = query.order_by(employees_table.c.id.asc())
+    result = await self.__ctx.db.fetch_all(query)
+    return [dict(r) for r in result]
 ```
 
 ### フロントエンドのヒント (axios呼び出し)

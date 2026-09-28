@@ -84,18 +84,19 @@
 </TableCell>
 ```
 
-### バックエンド: 部分更新のSQLAlchemy実装
+### バックエンド: 部分更新のSQLAlchemy Core + Context実装
 ```python
-def update(self, db: Session, employee_id: int, employee: EmployeeUpdate):
-    db_employee = self.get_by_id(db, employee_id)
-    if not db_employee:
-        return None
-
+async def update(self, employee_id: int, employee: EmployeeUpdate):
     update_data = employee.model_dump(exclude_unset=True)
-    for key, value in update_data.items():
-        setattr(db_employee, key, value)
+    if not update_data:
+        return await self.get_by_id(employee_id)
 
-    db.commit()
-    db.refresh(db_employee)
-    return db_employee
+    update_data["updated_at"] = datetime.utcnow()
+    query = (
+        employees_table.update()
+        .where(employees_table.c.id == employee_id)
+        .values(**update_data)
+    )
+    await self.__ctx.db.execute(query)
+    return await self.get_by_id(employee_id)
 ```

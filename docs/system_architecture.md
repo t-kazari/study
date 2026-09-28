@@ -41,27 +41,27 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    Client["クライアント (Next.js)"] --> Handler["① Handler (Web層 / コントローラー)<br>HTTPリクエスト受付 / バリデーション / HTTPレスポンス"]
-    Handler --> Service["② Usecase (Service層 / ビジネスロジック)<br>業務ルール / 重複チェック / トランザクション"]
-    Service --> RepoInterface["③ Repository (抽象層 / インターフェース)<br>抽象基底クラス (ABC)"]
-    RepoImpl["④ Infra (実装層)<br>SQLAlchemy / MySQL アクセス具象実装"] -.->|実装・バインド| RepoInterface
-    Service --> Domain["⑤ Domain (エンティティ / スキーマ)<br>Pydantic モデル / 定数"]
+    Client["クライアント (Next.js)"] --> Handler["① Handler (Web層 / コントローラー)<br>HTTPリクエスト受付 (async/await) / レスポンス返却"]
+    Handler --> Service["② Usecase (Service層 / ビジネスロジック)<br>業務ルール / 重複チェック"]
+    Service --> RepoInterface["③ Repository (抽象層 / インターフェース)<br>抽象基底クラス (ABC, async)"]
+    RepoImpl["④ Infra (実装層)<br>SQLAlchemy Core (Table) + Context (databases) 非同期実行"] -.->|実装・バインド| RepoInterface
+    Service --> Domain["⑤ Domain (エンティティ / スキーマ)<br>Pydantic モデル / 定数 (DB_SECRET_PATH)"]
     RepoImpl --> Domain
 
-    DI["⑥ Injector Module (DI層)<br>抽象と具象を結びつける"] -.->|注入| Service
+    DI["⑥ Injector Module (DI層)<br>Context・Repository・Service を注入"] -.->|注入| Service
 ```
 
 ### 各ディレクトリの役割
 
 | ディレクトリ | 役割 | 現場での意図 |
 | :--- | :--- | :--- |
-| `domain/` | 業務データモデル（Pydanticスキーマ）および定数の定義 | 入出力データの形式やビジネスルール上の定数（部署一覧など）を集約する。 |
-| `handler/` | FastAPIのルーター（エンドポイント）定義 | URLパスとHTTPメソッド（GET/POST/PUT/DELETE）を定義し、リクエストパラメータを受け取ってServiceを呼び出し、レスポンスを返す。 |
-| `usecase/` | ビジネスロジック（`EmployeeService`） | 「メールアドレスが重複していないか」「指定IDの社員が存在するか」などの業務ルールを検証・処理する。 |
-| `repository/` | データアクセスの抽象インターフェース（抽象クラス） | DB操作の仕様（メソッド一覧）のみを定義し、特定のDB製品（MySQL等）に依存させない。 |
-| `infra/` | Repositoryインターフェースの具象実装（SQLAlchemy） | 実際にMySQLとSQLAlchemyを使ってSQLを発行・実行する。DB製品が変更されてもUsecase層には影響を与えない。 |
-| `injectormodule/` | 依存性の注入（DI: Dependency Injection）設定 | `injector` ライブラリを使い、抽象（`EmployeeRepository`）に対して具象（`EmployeeRepositoryImpl`）を自動的に紐付ける。 |
-| `utils/` | 共通ログ・コンテキストユーティリティ | アプリケーション全体で使うロガーなどを提供する。 |
+| `domain/` | 業務データモデル（Pydanticスキーマ）および定数（`constants.DB_SECRET_PATH`）の定義 | SecretManagerのマウント先パスや入出力スキーマ、定数を集約する。 |
+| `handler/` | FastAPIのルーター（エンドポイント）定義 | 非同期 `async def` でリクエストを受け取り、Serviceを呼び出してレスポンスを返す。 |
+| `usecase/` | ビジネスロジック（`EmployeeService`） | 「メールアドレスが重複していないか」「指定IDの社員が存在するか」などの業務ルールを非同期で検証・処理する。 |
+| `repository/` | データアクセスの抽象インターフェース（抽象クラス） | 非同期DB操作の仕様（メソッド一覧）のみを定義する。 |
+| `infra/` | Repositoryインターフェースの具象実装 | `sqlalchemy.Table` と `Context.db`（`databases.Database`）を使い、非同期（`await fetch_all / execute`）でSQLを発行・実行する。 |
+| `injectormodule/` | 依存性の注入（DI: Dependency Injection）設定 | `injector` ライブラリを使い、`Context` や `EmployeeRepositoryImpl` を自動的に紐付ける。 |
+| `utils/` | 共通ログ・コンテキストユーティリティ | `Context`（`db: databases.Database` 保持）やロガーを提供する。 |
 
 ---
 
