@@ -48,9 +48,7 @@ export const EmployeeTable: React.FC<Props> = ({
   // 保存中の行ID
   const [savingId, setSavingId] = useState<number | null>(null);
 
-  // TODO: [課題3] チェックボックス切り替え時のハンドラーを実装してください
-  // - すでにチェックされていれば解除（checkedIdsから削除、editRowsから該当IDのデータを削除）
-  // - チェックされていなければ追加（checkedIdsに追加、editRowsに現在の社員データをセット）
+  // チェックボックス切り替え時のハンドラー
   const handleToggleCheck = (employee: Employee) => {
     const isChecked = checkedIds.includes(employee.id);
     if (isChecked) {
@@ -91,8 +89,7 @@ export const EmployeeTable: React.FC<Props> = ({
     }));
   };
 
-  // TODO: [課題3] 更新保存ハンドラーを実装してください
-  // editRows[id] の内容を取り出し、onUpdate(id, editData) を呼び出してください。
+  // 更新保存ハンドラー
   const handleSave = async (id: number) => {
     const editData = editRows[id];
     if (!editData) return;
@@ -157,7 +154,6 @@ export const EmployeeTable: React.FC<Props> = ({
           </TableRow>
         </TableHead>
         <TableBody>
-          {/* TODO: [課題1] employees 配列を map でループして行（TableRow）を表示してください */}
           {employees.map((emp) => {
             const isChecked = checkedIds.includes(emp.id);
             const currentEdit = editRows[emp.id] || {};
@@ -183,7 +179,7 @@ export const EmployeeTable: React.FC<Props> = ({
 
                 <TableCell sx={{ fontWeight: 600 }}>{emp.employee_code}</TableCell>
 
-                {/* TODO: [課題3] isChecked が true の時は TextField、false の時は通常のテキストを表示してください */}
+                {/* 氏名（チェック時は入力フィールド、非チェック時はテキスト表示） */}
                 <TableCell>
                   {isChecked ? (
                     <TextField
@@ -294,7 +290,7 @@ export const EmployeeTable: React.FC<Props> = ({
                   )}
                 </TableCell>
 
-                {/* TODO: [課題3, 課題4] 保存・削除ボタンを実装してください（isChecked に応じた disabled 制御） */}
+                {/* 操作ボタン列（チェックOFF時は非活性） */}
                 <TableCell align="center">
                   <Stack direction="row" spacing={1} justifyContent="center">
                     <Button
