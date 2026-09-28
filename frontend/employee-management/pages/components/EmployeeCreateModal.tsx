@@ -35,18 +35,9 @@ interface Props {
 // 3. email: 必須、メールアドレス形式 (email)
 // 4. department, position, joined_date, status: 必須
 const validationSchema: yup.ObjectSchema<EmployeeCreateInput> = yup.object({
-  employee_code: yup
-    .string()
-    .required('社員番号は必須です')
-    .matches(/^[A-Za-z0-9]{3,10}$/, '社員番号は半角英数字3〜10文字で入力してください'),
-  name: yup
-    .string()
-    .required('氏名は必須です')
-    .max(50, '氏名は50文字以内で入力してください'),
-  email: yup
-    .string()
-    .required('メールアドレスは必須です')
-    .email('正しいメールアドレス形式で入力してください'),
+  employee_code: yup.string().required('社員番号は必須です'),
+  name: yup.string().required('氏名は必須です'),
+  email: yup.string().required('メールアドレスは必須です'),
   department: yup.string().required('部署を選択してください'),
   position: yup.string().required('役職を選択してください'),
   joined_date: yup.string().required('入社日を入力してください'),
@@ -68,7 +59,7 @@ export const EmployeeCreateModal: React.FC<Props> = ({
   onClose,
   onSubmit,
 }) => {
-  // TODO: [課題2] useForm に yupResolver(validationSchema) をバインドしてください
+  // TODO: [課題2] useForm に yupResolver(validationSchema) を設定してください
   const {
     control,
     handleSubmit,
@@ -85,6 +76,9 @@ export const EmployeeCreateModal: React.FC<Props> = ({
   };
 
   // TODO: [課題2] フォーム送信ハンドラーを実装してください
+  // 1. await onSubmit(data); で親コンポーネントの登録処理を呼び出します。
+  // 2. reset(defaultValues); でフォームを初期化します。
+  // 3. onClose(); でモーダルを閉じます。
   const handleFormSubmit = async (data: EmployeeCreateInput) => {
     await onSubmit(data);
     reset(defaultValues);

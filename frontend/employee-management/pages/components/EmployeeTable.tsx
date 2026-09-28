@@ -92,7 +92,9 @@ export const EmployeeTable: React.FC<Props> = ({
   };
 
   // TODO: [課題3] 更新保存ハンドラーを実装してください
-  // editRows[id] の内容を取り出し、onUpdate(id, editData) を呼び出してください。
+  // 1. const editData = editRows[id]; を取得します。
+  // 2. await onUpdate(id, editData); を呼び出して更新します。
+  // 3. 更新成功後、checkedIdsからidを解除し、editRowsから破棄します。
   const handleSave = async (id: number) => {
     const editData = editRows[id];
     if (!editData) return;
