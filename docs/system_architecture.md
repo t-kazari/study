@@ -93,7 +93,7 @@ frontend/employee-management/
 │   ├── _app.tsx              # Emotion CacheProvider と MUI ThemeProvider を包括
 │   ├── _document.tsx          # サーバーサイドでEmotionのスタイルタグを抽出・注入
 │   ├── index.tsx              # ルートページ
-│   ├── EmployeeManagementUi.tsx # 社員管理のメイン画面（ステート管理・API連携）
+│   ├── EmployeeManagementUi.tsx # 社員管理のメイン画面（ステート管理・axiosによるAPI直接連携）
 │   └── components/
 │       ├── EmployeeSearchForm.tsx        # 検索条件入力・新規登録ボタン
 │       ├── EmployeeTable.tsx             # 一覧テーブル・チェックボックス行内編集・削除ボタン
@@ -102,13 +102,11 @@ frontend/employee-management/
 ├── src/
 │   ├── createEmotionCache.ts  # Emotion SSRキャッシュ生成
 │   └── theme.js               # MUI カラーテーマ設定
-├── types/
-│   └── employee.ts            # TypeScript型定義
-└── services/
-    └── employeeApi.ts         # axios を使ったバックエンドAPI通信関数群
+└── types/
+    └── employee.ts            # TypeScript型定義
 ```
 
 ### ポイント
 - **MUI + Emotion**: GoogleのMaterial Designに基づいた洗練されたUIコンポーネント群を導入。
 - **React Hook Form + Yup**: フォームの入力値管理・バリデーションスキーマの分離。
-- **axios サービス層**: コンポーネント内に直接 `axios.get` などを散乱させず、`services/employeeApi.ts` にAPI通信を集約。
+- **コンポーネント内API通信**: `EmployeeManagementUi.tsx` 内で `axios` を使ってバックエンドAPI（`/api/employees`）と直接連携。

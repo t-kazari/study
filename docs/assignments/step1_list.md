@@ -58,12 +58,11 @@
    - `@router.get("")` に `get_employees` ハンドラーを実装し、クエリパラメータを受け取ってServiceを呼び出します。
 
 ### フロントエンド
-1. **`services/employeeApi.ts`**:
-   - `fetchEmployees(params?: EmployeeSearchParams)` を実装し、axios で `GET /api/employees` をリクエストします。
-2. **`pages/EmployeeManagementUi.tsx`**:
-   - `useEffect` フックで初回ロード時に `loadEmployees()` を呼び出し、結果を `setEmployees` に保存します。
+1. **`pages/EmployeeManagementUi.tsx`**:
+   - `loadEmployees` 関数内で `axios.get<Employee[]>('/api/employees', { params })` を呼び出し、結果を `setEmployees` に保存します。
+   - `useEffect` フックで初回ロード時に `loadEmployees()` を呼び出します。
    - 検索フォームから渡された検索パラメータで再度 `loadEmployees(params)` を呼び出す `handleSearch` を実装します。
-3. **`pages/components/EmployeeTable.tsx`**:
+2. **`pages/components/EmployeeTable.tsx`**:
    - `employees.map((emp) => ...)` で行（`TableRow`）をレンダリングします。
 
 ---
@@ -92,10 +91,15 @@ async def get_all(self, keyword=None, department=None):
     return [dict(r) for r in result]
 ```
 
-### フロントエンドのヒント (axios呼び出し)
+### フロントエンドのヒント (コンポーネント内 axios 直接呼び出し)
 ```typescript
-export const fetchEmployees = async (params?: EmployeeSearchParams): Promise<Employee[]> => {
-  const response = await apiClient.get<Employee[]>('', { params });
-  return response.data;
+const loadEmployees = async (params: EmployeeSearchParams = searchParams) => {
+  try {
+    setLoading(true);
+    const response = await axios.get<Employee[]>('/api/employees', { params });
+    setEmployees(response.data);
+  } finally {
+    setLoading(false);
+  }
 };
 ```

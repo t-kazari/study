@@ -46,12 +46,10 @@
    - `@router.delete("/{employee_id}", status_code=204)` ハンドラーを実装。
 
 ### フロントエンド
-1. **`services/employeeApi.ts`**:
-   - `deleteEmployee(id: number)` を実装（`axios.delete`）。
-2. **`pages/components/EmployeeDeleteConfirmDialog.tsx`**:
+1. **`pages/components/EmployeeDeleteConfirmDialog.tsx`**:
    - 削除対象社員の情報を表示し、確認ボタンで `onConfirm` を実行。
-3. **`pages/EmployeeManagementUi.tsx`**:
-   - `handleConfirmDelete` 関数を実装し、`deleteEmployee` を呼び出して一覧を再取得。
+2. **`pages/EmployeeManagementUi.tsx`**:
+   - `handleConfirmDelete` 関数で `axios.delete('/api/employees/' + deleteTargetEmployee.id)` を呼び出して一覧を再取得。
 
 ---
 
@@ -59,9 +57,7 @@
 
 ### フロントエンド: axios による DELETE リクエスト
 ```typescript
-export const deleteEmployee = async (id: number): Promise<void> => {
-  await apiClient.delete(`/${id}`);
-};
+await axios.delete(`/api/employees/${deleteTargetEmployee.id}`);
 ```
 
 ### バックエンド: 204 No Content の非同期ハンドラー定義

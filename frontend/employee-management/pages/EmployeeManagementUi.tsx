@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import {
   Alert,
   Box,
@@ -13,16 +14,12 @@ import {
   EmployeeSearchParams,
   EmployeeUpdateInput,
 } from '../types/employee';
-import {
-  createEmployee,
-  deleteEmployee,
-  fetchEmployees,
-  updateEmployee,
-} from '../services/employeeApi';
 import { EmployeeSearchForm } from './components/EmployeeSearchForm';
 import { EmployeeTable } from './components/EmployeeTable';
 import { EmployeeCreateModal } from './components/EmployeeCreateModal';
 import { EmployeeDeleteConfirmDialog } from './components/EmployeeDeleteConfirmDialog';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 
 export const EmployeeManagementUi: React.FC = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -44,11 +41,13 @@ export const EmployeeManagementUi: React.FC = () => {
   });
 
   // TODO: [課題1] 社員一覧データを取得する関数を実装してください
+  // 1. const response = await axios.get<Employee[]>(`${API_BASE_URL}/api/employees`, { params });
+  // 2. setEmployees(response.data); でステートを更新します。
   const loadEmployees = async (params: EmployeeSearchParams = searchParams) => {
     try {
       setLoading(true);
-      const data = await fetchEmployees(params);
-      setEmployees(data);
+      // 実装してください
+      setEmployees([]);
     } catch (err: any) {
       console.error('社員データ取得エラー:', err);
       showSnackbar('社員データの取得に失敗しました', 'error');
@@ -70,16 +69,18 @@ export const EmployeeManagementUi: React.FC = () => {
     setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
-  // TODO: [課題1] 検索ハンドラーを実装してください
+  // 検索ハンドラー
   const handleSearch = (params: EmployeeSearchParams) => {
     setSearchParams(params);
     loadEmployees(params);
   };
 
   // TODO: [課題2] 新規社員登録ハンドラーを実装してください
+  // 1. await axios.post(`${API_BASE_URL}/api/employees`, data);
+  // 2. showSnackbar で完了メッセージを表示し、await loadEmployees() で一覧を更新します。
   const handleCreate = async (data: EmployeeCreateInput) => {
     try {
-      await createEmployee(data);
+      // 実装してください
       showSnackbar(`社員「${data.name}」を登録しました`, 'success');
       await loadEmployees();
     } catch (err: any) {
@@ -92,9 +93,11 @@ export const EmployeeManagementUi: React.FC = () => {
   };
 
   // TODO: [課題3] 行内編集・更新ハンドラーを実装してください
+  // 1. await axios.put(`${API_BASE_URL}/api/employees/${id}`, data);
+  // 2. showSnackbar で完了メッセージを表示し、await loadEmployees() で一覧を更新します。
   const handleUpdate = async (id: number, data: EmployeeUpdateInput) => {
     try {
-      await updateEmployee(id, data);
+      // 実装してください
       showSnackbar('社員情報を更新しました', 'success');
       await loadEmployees();
     } catch (err: any) {
@@ -111,12 +114,14 @@ export const EmployeeManagementUi: React.FC = () => {
   };
 
   // TODO: [課題4] 削除実行ハンドラーを実装してください
+  // 1. await axios.delete(`${API_BASE_URL}/api/employees/${deleteTargetEmployee.id}`);
+  // 2. showSnackbar で完了メッセージを表示し、setDeleteTargetEmployee(null)、await loadEmployees() を実行します。
   const handleConfirmDelete = async () => {
     if (!deleteTargetEmployee) return;
 
     try {
       setDeleteLoading(true);
-      await deleteEmployee(deleteTargetEmployee.id);
+      // 実装してください
       showSnackbar(`社員「${deleteTargetEmployee.name}」を削除しました`, 'success');
       setDeleteTargetEmployee(null);
       await loadEmployees();
