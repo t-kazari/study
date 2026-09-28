@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  # MySQL データベースコンテナ (Cloud SQL 想定)
+  mysql:
+    image: mysql:8.0
+    container_name: employee-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: employee_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "user", "-ppassword"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # FastAPI バックエンドコンテナ (Cloud Run 想定)
+  backend:
+    build:
+      context: ./backend/cloud_run/python/employee-management
+      dockerfile: Dockerfile
+    container_name: employee-backend
+    restart: always
+    environment:
+      DB_USER: user
+      DB_PASSWORD: password
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: employee_db
+      PORT: 8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/cloud_run/python/employee-management:/app
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  # Next.js フロントエンドコンテナ (Cloud Run 想定)
+  frontend:
+    build:
+      context: ./frontend/employee-management
+      dockerfile: Dockerfile
+    container_name: employee-frontend
+    restart: always
+    environment:
+      BACKEND_INTERNAL_URL: http://backend:8000
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  mysql_data:

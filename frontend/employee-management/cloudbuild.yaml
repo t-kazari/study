@@ -1,0 +1,26 @@
+steps:
+  # フロントエンドDockerイメージのビルド
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/employee-management-frontend:$COMMIT_SHA', '.']
+
+  # Container Registryへのプッシュ
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/employee-management-frontend:$COMMIT_SHA']
+
+  # Cloud Runへのデプロイ
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'employee-management-frontend'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/employee-management-frontend:$COMMIT_SHA'
+      - '--region'
+      - 'asia-northeast1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+
+images:
+  - 'gcr.io/$PROJECT_ID/employee-management-frontend:$COMMIT_SHA'
