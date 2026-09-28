@@ -29,7 +29,11 @@ interface Props {
   onSubmit: (data: EmployeeCreateInput) => Promise<void>;
 }
 
-// Yup バリデーションスキーマの定義
+// TODO: [課題2] Yup によるバリデーションスキーマを定義してください
+// 1. employee_code: 必須、半角英数字3〜10文字 (matches)
+// 2. name: 必須、最大50文字
+// 3. email: 必須、メールアドレス形式 (email)
+// 4. department, position, joined_date, status: 必須
 const validationSchema: yup.ObjectSchema<EmployeeCreateInput> = yup.object({
   employee_code: yup
     .string()
@@ -64,6 +68,7 @@ export const EmployeeCreateModal: React.FC<Props> = ({
   onClose,
   onSubmit,
 }) => {
+  // TODO: [課題2] useForm に yupResolver(validationSchema) をバインドしてください
   const {
     control,
     handleSubmit,
@@ -79,6 +84,7 @@ export const EmployeeCreateModal: React.FC<Props> = ({
     onClose();
   };
 
+  // TODO: [課題2] フォーム送信ハンドラーを実装してください
   const handleFormSubmit = async (data: EmployeeCreateInput) => {
     await onSubmit(data);
     reset(defaultValues);

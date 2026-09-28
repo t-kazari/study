@@ -25,17 +25,14 @@ import { EmployeeCreateModal } from './components/EmployeeCreateModal';
 import { EmployeeDeleteConfirmDialog } from './components/EmployeeDeleteConfirmDialog';
 
 export const EmployeeManagementUi: React.FC = () => {
-  // 社員一覧データ
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [searchParams, setSearchParams] = useState<EmployeeSearchParams>({});
 
-  // モーダル・ダイアログの開閉状態
   const [createModalOpen, setCreateModalOpen] = useState<boolean>(false);
   const [deleteTargetEmployee, setDeleteTargetEmployee] = useState<Employee | null>(null);
   const [deleteLoading, setDeleteLoading] = useState<boolean>(false);
 
-  // 通知スナックバー
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
@@ -46,7 +43,7 @@ export const EmployeeManagementUi: React.FC = () => {
     severity: 'info',
   });
 
-  // 社員一覧データの取得
+  // TODO: [課題1] 社員一覧データを取得する関数を実装してください
   const loadEmployees = async (params: EmployeeSearchParams = searchParams) => {
     try {
       setLoading(true);
@@ -73,13 +70,13 @@ export const EmployeeManagementUi: React.FC = () => {
     setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
-  // 検索ハンドラー
+  // TODO: [課題1] 検索ハンドラーを実装してください
   const handleSearch = (params: EmployeeSearchParams) => {
     setSearchParams(params);
     loadEmployees(params);
   };
 
-  // 新規社員登録ハンドラー
+  // TODO: [課題2] 新規社員登録ハンドラーを実装してください
   const handleCreate = async (data: EmployeeCreateInput) => {
     try {
       await createEmployee(data);
@@ -94,7 +91,7 @@ export const EmployeeManagementUi: React.FC = () => {
     }
   };
 
-  // 行内編集・更新ハンドラー
+  // TODO: [課題3] 行内編集・更新ハンドラーを実装してください
   const handleUpdate = async (id: number, data: EmployeeUpdateInput) => {
     try {
       await updateEmployee(id, data);
@@ -109,12 +106,11 @@ export const EmployeeManagementUi: React.FC = () => {
     }
   };
 
-  // 削除ダイアログ開く
   const handleOpenDeleteDialog = (employee: Employee) => {
     setDeleteTargetEmployee(employee);
   };
 
-  // 削除実行ハンドラー
+  // TODO: [課題4] 削除実行ハンドラーを実装してください
   const handleConfirmDelete = async () => {
     if (!deleteTargetEmployee) return;
 

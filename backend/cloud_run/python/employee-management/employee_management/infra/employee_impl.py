@@ -37,51 +37,32 @@ class EmployeeRepositoryImpl(EmployeeRepository):
         keyword: Optional[str] = None,
         department: Optional[str] = None,
     ) -> List[EmployeeModel]:
-        query = select(EmployeeModel)
-
-        # 部署での絞り込み
-        if department:
-            query = query.where(EmployeeModel.department == department)
-
-        # キーワード検索（氏名、社員番号、メールアドレスの部分一致）
-        if keyword:
-            search_pattern = f"%{keyword}%"
-            query = query.where(
-                or_(
-                    EmployeeModel.name.like(search_pattern),
-                    EmployeeModel.employee_code.like(search_pattern),
-                    EmployeeModel.email.like(search_pattern),
-                )
-            )
-
-        query = query.order_by(EmployeeModel.id.asc())
-        return list(db.scalars(query).all())
+        # TODO: [課題1] 社員一覧取得処理を実装してください
+        # 1. select(EmployeeModel) でクエリを作成します。
+        # 2. department が指定されている場合は where(EmployeeModel.department == department) で絞り込みます。
+        # 3. keyword が指定されている場合は or_() を使い、name, employee_code, email の部分一致（.like()）で絞り込みます。
+        # 4. id 昇順（.order_by(EmployeeModel.id.asc())）で並び替え、list(db.scalars(query).all()) を返してください。
+        pass
 
     def get_by_id(self, db: Session, employee_id: int) -> Optional[EmployeeModel]:
         return db.get(EmployeeModel, employee_id)
 
     def get_by_code(self, db: Session, employee_code: str) -> Optional[EmployeeModel]:
-        query = select(EmployeeModel).where(EmployeeModel.employee_code == employee_code)
-        return db.scalars(query).first()
+        # TODO: [課題2] 社員番号での重複チェック用取得クエリを実装してください
+        # select(EmployeeModel).where(EmployeeModel.employee_code == employee_code)
+        pass
 
     def get_by_email(self, db: Session, email: str) -> Optional[EmployeeModel]:
-        query = select(EmployeeModel).where(EmployeeModel.email == email)
-        return db.scalars(query).first()
+        # TODO: [課題2] メールアドレスでの重複チェック用取得クエリを実装してください
+        # select(EmployeeModel).where(EmployeeModel.email == email)
+        pass
 
     def create(self, db: Session, employee: EmployeeCreate) -> EmployeeModel:
-        db_employee = EmployeeModel(
-            employee_code=employee.employee_code,
-            name=employee.name,
-            email=employee.email,
-            department=employee.department,
-            position=employee.position,
-            joined_date=employee.joined_date,
-            status=employee.status,
-        )
-        db.add(db_employee)
-        db.commit()
-        db.refresh(db_employee)
-        return db_employee
+        # TODO: [課題2] 社員新規登録処理を実装してください
+        # 1. EmployeeModel インスタンスを作成します。
+        # 2. db.add(db_employee) でセッションに追加します。
+        # 3. db.commit() でコミットし、db.refresh(db_employee) で確定データを読み込んで返してください。
+        pass
 
     def update(
         self,
@@ -89,23 +70,14 @@ class EmployeeRepositoryImpl(EmployeeRepository):
         employee_id: int,
         employee: EmployeeUpdate,
     ) -> Optional[EmployeeModel]:
-        db_employee = self.get_by_id(db, employee_id)
-        if not db_employee:
-            return None
-
-        update_data = employee.model_dump(exclude_unset=True)
-        for key, value in update_data.items():
-            setattr(db_employee, key, value)
-
-        db.commit()
-        db.refresh(db_employee)
-        return db_employee
+        # TODO: [課題3] 社員情報更新処理を実装してください
+        # 1. self.get_by_id(db, employee_id) で対象レコードを取得します。存在しなければ None を返します。
+        # 2. employee.model_dump(exclude_unset=True) で渡された項目のみ setattr で更新します。
+        # 3. db.commit() と db.refresh(db_employee) を実行して返してください。
+        pass
 
     def delete(self, db: Session, employee_id: int) -> bool:
-        db_employee = self.get_by_id(db, employee_id)
-        if not db_employee:
-            return False
-
-        db.delete(db_employee)
-        db.commit()
-        return True
+        # TODO: [課題4] 社員の物理削除処理を実装してください
+        # 1. self.get_by_id(db, employee_id) で対象レコードを取得します。存在しなければ False を返します。
+        # 2. db.delete(db_employee) を実行し、db.commit() を行って True を返してください。
+        pass

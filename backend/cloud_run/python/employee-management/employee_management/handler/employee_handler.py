@@ -25,7 +25,8 @@ def get_employees(
 ):
     """社員一覧を取得する（検索・絞り込み対応）"""
     logger.info(f"社員一覧取得リクエスト: keyword={keyword}, department={department}")
-    return service.get_employees(db, keyword=keyword, department=department)
+    # TODO: [課題1] service.get_employees(db, keyword=keyword, department=department) を呼び出して返してください
+    pass
 
 
 @router.get("/{employee_id}", response_model=EmployeeResponse, summary="社員詳細取得")
@@ -52,7 +53,8 @@ def create_employee(
 ):
     """社員を新規登録する"""
     logger.info(f"社員新規登録リクエスト: code={employee_data.employee_code}, name={employee_data.name}")
-    return service.create_employee(db, employee_data)
+    # TODO: [課題2] service.create_employee(db, employee_data) を呼び出して結果を返してください
+    pass
 
 
 @router.put("/{employee_id}", response_model=EmployeeResponse, summary="社員情報更新")
@@ -64,7 +66,8 @@ def update_employee(
 ):
     """社員情報を更新する（行内編集の保存）"""
     logger.info(f"社員更新リクエスト: id={employee_id}")
-    return service.update_employee(db, employee_id, employee_data)
+    # TODO: [課題3] service.update_employee(db, employee_id, employee_data) を呼び出して結果を返してください
+    pass
 
 
 @router.delete(
@@ -79,5 +82,5 @@ def delete_employee(
 ):
     """社員を物理削除する"""
     logger.info(f"社員削除リクエスト: id={employee_id}")
-    service.delete_employee(db, employee_id)
-    return None
+    # TODO: [課題4] service.delete_employee(db, employee_id) を呼び出してください（返り値は None）
+    pass

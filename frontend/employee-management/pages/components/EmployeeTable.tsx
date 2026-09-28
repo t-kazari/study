@@ -48,11 +48,12 @@ export const EmployeeTable: React.FC<Props> = ({
   // 保存中の行ID
   const [savingId, setSavingId] = useState<number | null>(null);
 
-  // チェックボックス切り替え時のハンドラー
+  // TODO: [課題3] チェックボックス切り替え時のハンドラーを実装してください
+  // - すでにチェックされていれば解除（checkedIdsから削除、editRowsから該当IDのデータを削除）
+  // - チェックされていなければ追加（checkedIdsに追加、editRowsに現在の社員データをセット）
   const handleToggleCheck = (employee: Employee) => {
     const isChecked = checkedIds.includes(employee.id);
     if (isChecked) {
-      // チェック解除：選択リストから除外＆編集データを破棄
       setCheckedIds((prev) => prev.filter((id) => id !== employee.id));
       setEditRows((prev) => {
         const next = { ...prev };
@@ -60,7 +61,6 @@ export const EmployeeTable: React.FC<Props> = ({
         return next;
       });
     } else {
-      // チェックON：選択リストに追加＆現在値で初期化
       setCheckedIds((prev) => [...prev, employee.id]);
       setEditRows((prev) => ({
         ...prev,
@@ -76,7 +76,7 @@ export const EmployeeTable: React.FC<Props> = ({
     }
   };
 
-  // 入力フィールド変更時のハンドラー
+  // 入力フィールド変更ハンドラー
   const handleFieldChange = (
     employeeId: number,
     field: keyof Employee,
@@ -91,7 +91,8 @@ export const EmployeeTable: React.FC<Props> = ({
     }));
   };
 
-  // 更新保存ハンドラー
+  // TODO: [課題3] 更新保存ハンドラーを実装してください
+  // editRows[id] の内容を取り出し、onUpdate(id, editData) を呼び出してください。
   const handleSave = async (id: number) => {
     const editData = editRows[id];
     if (!editData) return;
@@ -99,7 +100,6 @@ export const EmployeeTable: React.FC<Props> = ({
     try {
       setSavingId(id);
       await onUpdate(id, editData);
-      // 保存完了後にチェック解除
       setCheckedIds((prev) => prev.filter((i) => i !== id));
       setEditRows((prev) => {
         const next = { ...prev };
@@ -157,6 +157,7 @@ export const EmployeeTable: React.FC<Props> = ({
           </TableRow>
         </TableHead>
         <TableBody>
+          {/* TODO: [課題1] employees 配列を map でループして行（TableRow）を表示してください */}
           {employees.map((emp) => {
             const isChecked = checkedIds.includes(emp.id);
             const currentEdit = editRows[emp.id] || {};
@@ -180,10 +181,9 @@ export const EmployeeTable: React.FC<Props> = ({
                   />
                 </TableCell>
 
-                {/* 社員番号（常に読み取り専用） */}
                 <TableCell sx={{ fontWeight: 600 }}>{emp.employee_code}</TableCell>
 
-                {/* 氏名 */}
+                {/* TODO: [課題3] isChecked が true の時は TextField、false の時は通常のテキストを表示してください */}
                 <TableCell>
                   {isChecked ? (
                     <TextField
@@ -197,7 +197,6 @@ export const EmployeeTable: React.FC<Props> = ({
                   )}
                 </TableCell>
 
-                {/* メールアドレス */}
                 <TableCell>
                   {isChecked ? (
                     <TextField
@@ -212,7 +211,6 @@ export const EmployeeTable: React.FC<Props> = ({
                   )}
                 </TableCell>
 
-                {/* 部署 */}
                 <TableCell>
                   {isChecked ? (
                     <FormControl size="small" fullWidth>
@@ -234,7 +232,6 @@ export const EmployeeTable: React.FC<Props> = ({
                   )}
                 </TableCell>
 
-                {/* 役職 */}
                 <TableCell>
                   {isChecked ? (
                     <FormControl size="small" fullWidth>
@@ -256,7 +253,6 @@ export const EmployeeTable: React.FC<Props> = ({
                   )}
                 </TableCell>
 
-                {/* 入社日 */}
                 <TableCell>
                   {isChecked ? (
                     <TextField
@@ -273,7 +269,6 @@ export const EmployeeTable: React.FC<Props> = ({
                   )}
                 </TableCell>
 
-                {/* 在籍ステータス */}
                 <TableCell>
                   {isChecked ? (
                     <FormControl size="small" fullWidth>
@@ -299,7 +294,7 @@ export const EmployeeTable: React.FC<Props> = ({
                   )}
                 </TableCell>
 
-                {/* 操作ボタン列（チェックOFF時は非活性） */}
+                {/* TODO: [課題3, 課題4] 保存・削除ボタンを実装してください（isChecked に応じた disabled 制御） */}
                 <TableCell align="center">
                   <Stack direction="row" spacing={1} justifyContent="center">
                     <Button

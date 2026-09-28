@@ -6,7 +6,6 @@ import {
   EmployeeUpdateInput,
 } from '../types/employee';
 
-// ブラウザからのリクエストはNext.js経由（/api）または直接指定のURL
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 
 const apiClient = axios.create({
@@ -22,8 +21,10 @@ const apiClient = axios.create({
 export const fetchEmployees = async (
   params?: EmployeeSearchParams,
 ): Promise<Employee[]> => {
-  const response = await apiClient.get<Employee[]>('', { params });
-  return response.data;
+  // TODO: [課題1] axios で GET /api/employees を呼び出してください
+  // const response = await apiClient.get<Employee[]>('', { params });
+  // return response.data;
+  return [];
 };
 
 /**
@@ -40,8 +41,10 @@ export const fetchEmployeeById = async (id: number): Promise<Employee> => {
 export const createEmployee = async (
   data: EmployeeCreateInput,
 ): Promise<Employee> => {
-  const response = await apiClient.post<Employee>('', data);
-  return response.data;
+  // TODO: [課題2] axios で POST /api/employees を呼び出してください
+  // const response = await apiClient.post<Employee>('', data);
+  // return response.data;
+  throw new Error('Not implemented');
 };
 
 /**
@@ -51,13 +54,17 @@ export const updateEmployee = async (
   id: number,
   data: EmployeeUpdateInput,
 ): Promise<Employee> => {
-  const response = await apiClient.put<Employee>(`/${id}`, data);
-  return response.data;
+  // TODO: [課題3] axios で PUT /api/employees/{id} を呼び出してください
+  // const response = await apiClient.put<Employee>(`/${id}`, data);
+  // return response.data;
+  throw new Error('Not implemented');
 };
 
 /**
  * 社員を物理削除する
  */
 export const deleteEmployee = async (id: number): Promise<void> => {
-  await apiClient.delete(`/${id}`);
+  // TODO: [課題4] axios で DELETE /api/employees/{id} を呼び出してください
+  // await apiClient.delete(`/${id}`);
+  throw new Error('Not implemented');
 };
