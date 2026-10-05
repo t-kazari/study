@@ -13,11 +13,11 @@ import {
   EmployeeCreateInput,
   EmployeeSearchParams,
   EmployeeUpdateInput,
-} from '../types/employee';
-import { EmployeeSearchForm } from './components/EmployeeSearchForm';
-import { EmployeeTable } from './components/EmployeeTable';
-import { EmployeeCreateModal } from './components/EmployeeCreateModal';
-import { EmployeeDeleteConfirmDialog } from './components/EmployeeDeleteConfirmDialog';
+} from '../../types/employee';
+import { EmployeeSearchForm } from './EmployeeSearchForm';
+import { EmployeeTable } from './EmployeeTable';
+import { EmployeeCreateModal } from './EmployeeCreateModal';
+import { EmployeeDeleteConfirmDialog } from './EmployeeDeleteConfirmDialog';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 
